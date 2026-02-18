@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — AuthApp</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --surface2: #16161f;
+      --border: #1e1e2e;
+      --accent: #6ee7b7;
+      --accent2: #38bdf8;
+      --accent3: #818cf8;
+      --text: #e8e8f0;
+      --muted: #5a5a7a;
+      --error: #f87171;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.08;
+      pointer-events: none;
+    }
+    .bg-blob:nth-child(1) { width: 600px; height: 600px; background: #6ee7b7; top: -200px; right: -100px; }
+    .bg-blob:nth-child(2) { width: 500px; height: 500px; background: #818cf8; bottom: -200px; left: -100px; }
+
+    /* NAV */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo span { color: var(--text); }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .nav-user {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .nav-user strong { color: var(--text); font-weight: 500; }
+
+    .logout-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .logout-btn:hover { border-color: var(--error); color: var(--error); }
+
+    /* MAIN */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 48px 24px;
+      animation: fadeIn 0.5s ease both;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .welcome-section {
+      margin-bottom: 40px;
+    }
+    .welcome-section h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 36px;
+      letter-spacing: -1px;
+      margin-bottom: 8px;
+    }
+    .welcome-section h1 .name {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .welcome-section p { color: var(--muted); font-size: 15px; }
+
+    /* STAT CARDS */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .stat-card:hover { border-color: #2e2e4e; transform: translateY(-2px); }
+    .stat-card .icon {
+      font-size: 22px;
+      margin-bottom: 14px;
+    }
+    .stat-card .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .stat-card .value {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+    }
+    .stat-card.green .value { color: var(--accent); }
+    .stat-card.blue .value { color: var(--accent2); }
+    .stat-card.purple .value { color: var(--accent3); }
+
+    /* INFO PANEL */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .panel-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-header h2 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+    }
+    .badge.green { background: rgba(110, 231, 183, 0.15); color: var(--accent); border: 1px solid rgba(110,231,183,0.2); }
+    .badge.blue { background: rgba(56, 189, 248, 0.15); color: var(--accent2); border: 1px solid rgba(56,189,248,0.2); }
+
+    .panel-body { padding: 24px; }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .info-row .key {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+    .info-row .val {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    /* TOKEN BOX */
+    .token-box {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      word-break: break-all;
+      line-height: 1.6;
+      position: relative;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* LOADING STATE */
+    #loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .loader {
+      width: 36px; height: 36px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #dashContent { display: none; }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 22px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 100;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { border-color: var(--accent); color: var(--accent); }
+    .toast.error { border-color: var(--error); color: var(--error); }
+
+    @media (max-width: 500px) {
+      nav { padding: 0 16px; }
+      main { padding: 32px 16px; }
+      .welcome-section h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-blob"></div>
+  <div class="bg-blob"></div>
+
+  <nav>
+    <div class="logo">◈ <span>Auth</span>App</div>
+    <div class="nav-right">
+      <span class="nav-user">Signed in as <strong id="navUsername">…</strong></span>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+  </nav>
+
+  <main>
+    <div id="loading">
+      <div class="loader"></div>
+      <span>Loading dashboard…</span>
+    </div>
+
+    <div id="dashContent">
+      <div class="welcome-section">
+        <h1>Hello, <span class="name" id="greeting">there</span> 👋</h1>
+        <p>Here's your account overview and session info.</p>
+      </div>
+
+      <div class="cards-grid">
+        <div class="stat-card green">
+          <div class="icon">🔐</div>
+          <div class="label">Status</div>
+          <div class="value">Authenticated</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="icon">🪪</div>
+          <div class="label">User ID</div>
+          <div class="value" id="userId">—</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="icon">📅</div>
+          <div class="label">Member Since</div>
+          <div class="value" id="memberSince">—</div>
+        </div>
+        <div class="stat-card" style="border-color:#1e1e2e;">
+          <div class="icon">🎭</div>
+          <div class="label">Role</div>
+          <div class="value" id="roleCard" style="color:#f472b6;font-size:16px;">—</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Account Details</h2>
+          <span class="badge green">Active</span>
+        </div>
+        <div class="panel-body">
+          <div class="info-row">
+            <span class="key">Username</span>
+            <span class="val" id="infoUsername">—</span>
+          </div>
+          <div class="info-row">
+            <span class="key">Email</span>
+            <span class="val" id="infoEmail">—</span>
+          </div>
+          <div class="info-row">
+            <span class="key">User ID</span>
+            <span class="val" id="infoId">—</span>
+          </div>
+          <div class="info-row">
+            <span class="key">Date Joined</span>
+            <span class="val" id="infoDate">—</span>
+          </div>
+          <div class="info-row">
+            <span class="key">Roles</span>
+            <span class="val" id="infoRoles">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Access Token</h2>
+          <span class="badge blue">JWT</span>
+        </div>
+        <div class="panel-body">
+          <div class="token-box">
+            <button class="copy-btn" onclick="copyToken()">Copy</button>
+            <span id="tokenDisplay">—</span>
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin-top:10px;">⚠ Keep your token private. It grants access to your account.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API = '';
+
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = (type === 'success' ? '✓ ' : '✕ ') + msg;
+      t.className = `toast ${type} show`;
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function logout() {
+      localStorage.removeItem('access');
+      localStorage.removeItem('refresh');
+      localStorage.removeItem('user');
+      window.location.href = '/login/';
+    }
+
+    async function copyToken() {
+      const token = localStorage.getItem('access') || '';
+      await navigator.clipboard.writeText(token);
+      showToast('Token copied to clipboard!', 'success');
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '—';
+      return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function populateFromLocal(user) {
+      const name = user.username || 'there';
+      document.getElementById('greeting').textContent = name;
+      document.getElementById('navUsername').textContent = name;
+      document.getElementById('userId').textContent = '#' + (user.id || '—');
+      document.getElementById('memberSince').textContent = formatDate(user.date_joined);
+      document.getElementById('infoUsername').textContent = user.username || '—';
+      document.getElementById('infoEmail').textContent = user.email || '—';
+      document.getElementById('infoId').textContent = user.id || '—';
+      document.getElementById('infoDate').textContent = formatDate(user.date_joined);
+
+      // Roles
+      const roles = user.roles && user.roles.length ? user.roles : [];
+      const rolesText = roles.length ? roles.join(', ') : 'No role assigned';
+      document.getElementById('infoRoles').textContent = rolesText;
+      document.getElementById('roleCard').textContent = roles.length ? roles[0] : 'None';
+
+      const token = localStorage.getItem('access') || '';
+      document.getElementById('tokenDisplay').textContent = token;
+    }
+
+    async function loadDashboard() {
+      const token = localStorage.getItem('access');
+      if (!token) {
+        window.location.href = '/login/';
+        return;
+      }
+
+      // Populate from local storage immediately for snappy UX
+      const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+      if (localUser.username) populateFromLocal(localUser);
+
+      try {
+        const res = await fetch(`${API}/api/dashboard/`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.status === 401 || res.status === 403) {
+          showToast('Session expired. Please login again.', 'error');
+          setTimeout(logout, 2000);
+          return;
+        }
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+            populateFromLocal(data.user);
+          }
+        }
+        // If role check fails (403) we still show local data
+      } catch {
+        // Server might be down — still show cached data
+        if (!localUser.username) {
+          showToast('Cannot reach server.', 'error');
+        }
+      }
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('dashContent').style.display = 'block';
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>

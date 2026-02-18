@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.views.generic import TemplateView
 from myapp.views import RegisterView, LoginView, DashboardView
 
 from rest_framework_simplejwt.views import (
@@ -25,10 +26,21 @@ from rest_framework_simplejwt.views import (
 )
 
 urlpatterns = [
+    # Admin
     path('admin/', admin.site.urls),
+
+    # ─── Frontend Template Pages ───────────────────────────────────────────────
+    path('', TemplateView.as_view(template_name='login.html'), name='home'),
+    path('login/', TemplateView.as_view(template_name='login.html'), name='login-page'),
+    path('register/', TemplateView.as_view(template_name='register.html'), name='register-page'),
+    path('dashboard/', TemplateView.as_view(template_name='dashboard.html'), name='dashboard-page'),
+
+    # ─── REST API Endpoints ────────────────────────────────────────────────────
     path('api/auth/register/', RegisterView.as_view(), name='register'),
     path('api/auth/login/', LoginView.as_view(), name='login'),
     path('api/dashboard/', DashboardView.as_view(), name='dashboard'),
+
+    # ─── SimpleJWT Token Endpoints ────────────────────────────────────────────
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
