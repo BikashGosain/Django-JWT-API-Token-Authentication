@@ -1,6 +1,8 @@
 # Django JWT API Token Authentication
 
 A Django REST Framework project implementing JWT (JSON Web Token) authentication with role-based access control, plus a custom frontend UI (no DRF browsable API). Built while learning from a YouTube tutorial.
+---
+view live: https://django-jwt-api-token-authentication.onrender.com
 
 ## Features
 
