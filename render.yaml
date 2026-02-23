@@ -1,0 +1,17 @@
+services:
+
+  - type: web
+
+    name: django-app
+
+    env: python
+
+    buildCommand: "./build.sh"
+
+    startCommand: "gunicorn djangojwt.wsgi:application"
+
+    envVars:
+
+      - key: DJANGO_SETTINGS_MODULE
+
+        value: djangojwt.settings
