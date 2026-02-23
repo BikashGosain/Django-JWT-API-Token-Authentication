@@ -34,9 +34,9 @@ class LoginView(generics.GenericAPIView):
             return Response({'error': 'Invalid Credentials'}, status=400)
         
 class DashboardView(APIView):
-    permission_classes = [permissions.IsAuthenticated, HasRole]
-    required_role = 'Teacher'  # Example role required to access this view
-
+    # permission_classes = [permissions.IsAuthenticated, HasRole]
+    # required_role = 'Teacher'  
+    permission_classes = [permissions.IsAuthenticated]
     def get(self, request, *args, **kwargs):
         user = request.user
         user_serializer = UserSerializer(user)
